@@ -1,5 +1,6 @@
 package com.github.puhaiyang.k8sops.service.impl;
 
+import com.github.puhaiyang.k8sops.K8sUtils;
 import com.github.puhaiyang.k8sops.bean.DeploymentVO;
 import com.github.puhaiyang.k8sops.bean.JobVO;
 import com.github.puhaiyang.k8sops.bean.PodVO;
@@ -15,6 +16,7 @@ import io.fabric8.kubernetes.api.model.batch.CronJob;
 import io.fabric8.kubernetes.api.model.batch.CronJobList;
 import io.fabric8.kubernetes.api.model.batch.Job;
 import io.fabric8.kubernetes.api.model.batch.JobList;
+import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.apache.commons.collections4.CollectionUtils;
@@ -40,7 +42,7 @@ public class MonitorServiceImpl implements MonitorService {
     @Override
     public List<TaskVO> getTaskList(String namespace) {
         List<TaskVO> taskVOList = new ArrayList<>();
-        try (final KubernetesClient k8s = new DefaultKubernetesClient()) {
+        try (final KubernetesClient k8s = K8sUtils.getClient()) {
             CronJobList cronJobList = k8s.batch().cronjobs().inNamespace(namespace).list();
             List<CronJob> items = cronJobList.getItems();
             for (CronJob cronJob : items) {
@@ -87,7 +89,7 @@ public class MonitorServiceImpl implements MonitorService {
     @Override
     public List<DeploymentVO> getDeploymentList(String namespace) {
         List<DeploymentVO> deploymentVOList = new ArrayList<>();
-        try (final KubernetesClient k8s = new DefaultKubernetesClient()) {
+        try (final KubernetesClient k8s = K8sUtils.getClient()) {
             DeploymentList deploymentList = k8s.apps().deployments().inNamespace(namespace).list();
             List<Deployment> items = deploymentList.getItems();
             for (Deployment deployment : items) {
@@ -124,7 +126,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     @Override
     public String getPodLog(String namespace, String podname) {
-        try (final KubernetesClient k8s = new DefaultKubernetesClient()) {
+        try (final KubernetesClient k8s = K8sUtils.getClient()) {
             return k8s.pods().inNamespace(namespace).withName(podname).getLog();
         }
     }
@@ -138,7 +140,7 @@ public class MonitorServiceImpl implements MonitorService {
      */
     private List<PodVO> getPodListByDeployment(String namespace, String deploymentname) {
         List<PodVO> podVOList = new ArrayList<>();
-        try (final KubernetesClient k8s = new DefaultKubernetesClient()) {
+        try (final KubernetesClient k8s = K8sUtils.getClient()) {
             PodList podList = k8s.pods().inNamespace(namespace).list();
             List<Pod> items = podList.getItems();
             if (StringUtils.isNotBlank(deploymentname)) {
@@ -156,7 +158,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     private List<PodVO> getPodListByJob(String namespace, String jobname) {
         List<PodVO> pobVOList = new ArrayList<>();
-        try (final KubernetesClient k8s = new DefaultKubernetesClient()) {
+        try (final KubernetesClient k8s = K8sUtils.getClient()) {
             PodList podList = k8s.pods().inNamespace(namespace).list();
             if (StringUtils.isNotBlank(jobname)) {
                 podList = k8s.pods().inNamespace(namespace).withLabel("job-name", jobname).list();
@@ -193,7 +195,7 @@ public class MonitorServiceImpl implements MonitorService {
      */
     private List<JobVO> getJobListByCronjob(String namespace, String cronjobName) {
         List<JobVO> jobVOList = new ArrayList<>();
-        try (final KubernetesClient k8s = new DefaultKubernetesClient()) {
+        try (final KubernetesClient k8s = K8sUtils.getClient()) {
             JobList jobList = k8s.batch().jobs().inNamespace(namespace).list();
             List<Job> items = jobList.getItems();
             if (StringUtils.isNotBlank(cronjobName)) {
