@@ -1,0 +1,1 @@
+java -jar -Dserver.port=8088  -Dk8s.url=http://192.168.127.137:8081 target/k8s-ops-1.0.jar
